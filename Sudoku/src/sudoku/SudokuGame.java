@@ -21,8 +21,10 @@ public class SudokuGame extends JFrame implements KeyListener {
     private static final Color BACKGROUND_COLOR = new Color(240, 240, 240);
     private static final Color SUBGRID_COLOR = new Color(200, 200, 200);
     private static final Color CELL_COLOR = new Color(255, 255, 255);
+    private static final Color HIGHLIGHT_COLOR = new Color(173, 216, 230); 
     private static final Color TEXT_COLOR = new Color(50, 50, 50);
     private static final Font CELL_FONT = new Font("Arial", Font.BOLD, 24);
+    private JTextField lastSelectedCell = null;
 
     public SudokuGame() {
         initComponents();
@@ -107,22 +109,47 @@ public class SudokuGame extends JFrame implements KeyListener {
         return true;
     }
 
+    private void highlightRowAndColumn(JTextField selectedCell) {
+        resetHighlight();
+        int fila = getFila(selectedCell);
+        int columna = getColumna(selectedCell);
+
+        for (int i = 0; i < 9; i++) {
+            visual[fila][i].setBackground(HIGHLIGHT_COLOR);
+            visual[i][columna].setBackground(HIGHLIGHT_COLOR);
+        }
+        selectedCell.setBackground(HIGHLIGHT_COLOR);
+        lastSelectedCell = selectedCell;
+    }
+
+    private void resetHighlight() {
+        if (lastSelectedCell != null) {
+            int fila = getFila(lastSelectedCell);
+            int columna = getColumna(lastSelectedCell);
+            for (int i = 0; i < 9; i++) {
+                visual[fila][i].setBackground(CELL_COLOR);
+                visual[i][columna].setBackground(CELL_COLOR);
+            }
+        }
+    }
+
     @Override
     public void keyTyped(KeyEvent e) {
         char tecla = e.getKeyChar();
         if (tecla < '1' || tecla > '9') {
-            e.consume(); 
+            e.consume();
         }
-        
+
         JTextField source = (JTextField) e.getSource();
         if (source.getText().length() >= 1) {
-            e.consume(); 
+            e.consume();
         }
     }
 
     @Override
     public void keyPressed(KeyEvent e) {
-      
+        JTextField source = (JTextField) e.getSource();
+        highlightRowAndColumn(source);
     }
 
     @Override
@@ -134,7 +161,8 @@ public class SudokuGame extends JFrame implements KeyListener {
             String texto = source.getText();
             if (texto.length() > 0) {
                 int numero = Integer.parseInt(texto);
-                if (!esNumeroValido(numero, fila, columna)) {                
+                if (!esNumeroValido(numero, fila, columna)) {
+                   
                     JOptionPane errorPane = new JOptionPane("Número no válido en esta celda.", JOptionPane.ERROR_MESSAGE);
                     final javax.swing.JDialog dialog = errorPane.createDialog(this, "Error");
                     dialog.setModal(false);
@@ -142,7 +170,7 @@ public class SudokuGame extends JFrame implements KeyListener {
                     Timer timer = new Timer(3000, e1 -> {
                         dialog.setVisible(false);
                         dialog.dispose();
-                        source.setText(""); 
+                        source.setText("");
                     });
                     timer.setRepeats(false);
                     timer.start();
@@ -161,7 +189,7 @@ public class SudokuGame extends JFrame implements KeyListener {
             }
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Error al verificar el número.", "Error", JOptionPane.ERROR_MESSAGE);
-            source.setText(""); 
+            source.setText("");
         }
     }
 
@@ -173,7 +201,7 @@ public class SudokuGame extends JFrame implements KeyListener {
                 }
             }
         }
-        return -1; 
+        return -1;
     }
 
     private int getColumna(JTextField source) {
@@ -184,7 +212,7 @@ public class SudokuGame extends JFrame implements KeyListener {
                 }
             }
         }
-        return -1; 
+        return -1;
     }
 
     private boolean esNumeroValido(int numero, int fila, int columna) {
