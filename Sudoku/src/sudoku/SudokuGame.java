@@ -134,8 +134,7 @@ public class SudokuGame extends JFrame implements KeyListener {
             String texto = source.getText();
             if (texto.length() > 0) {
                 int numero = Integer.parseInt(texto);
-                if (!esNumeroValido(numero, fila, columna)) {
-                    // Mostrar un mensaje de error por 3 segundos
+                if (!esNumeroValido(numero, fila, columna)) {                
                     JOptionPane errorPane = new JOptionPane("Número no válido en esta celda.", JOptionPane.ERROR_MESSAGE);
                     final javax.swing.JDialog dialog = errorPane.createDialog(this, "Error");
                     dialog.setModal(false);
