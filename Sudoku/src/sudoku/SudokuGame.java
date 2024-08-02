@@ -22,6 +22,7 @@ public class SudokuGame extends JFrame implements KeyListener {
     private static final Color SUBGRID_COLOR = new Color(200, 200, 200);
     private static final Color CELL_COLOR = new Color(255, 255, 255);
     private static final Color HIGHLIGHT_COLOR = new Color(173, 216, 230); 
+    private static final Color COMPLETE_COLOR = new Color(144, 238, 144); 
     private static final Color TEXT_COLOR = new Color(50, 50, 50);
     private static final Font CELL_FONT = new Font("Arial", Font.BOLD, 24);
     private JTextField lastSelectedCell = null;
@@ -110,13 +111,16 @@ public class SudokuGame extends JFrame implements KeyListener {
     }
 
     private void highlightRowAndColumn(JTextField selectedCell) {
-        resetHighlight();
         int fila = getFila(selectedCell);
         int columna = getColumna(selectedCell);
 
         for (int i = 0; i < 9; i++) {
-            visual[fila][i].setBackground(HIGHLIGHT_COLOR);
-            visual[i][columna].setBackground(HIGHLIGHT_COLOR);
+            if (visual[fila][i].getBackground() != COMPLETE_COLOR) {
+                visual[fila][i].setBackground(HIGHLIGHT_COLOR);
+            }
+            if (visual[i][columna].getBackground() != COMPLETE_COLOR) {
+                visual[i][columna].setBackground(HIGHLIGHT_COLOR);
+            }
         }
         selectedCell.setBackground(HIGHLIGHT_COLOR);
         lastSelectedCell = selectedCell;
@@ -127,8 +131,12 @@ public class SudokuGame extends JFrame implements KeyListener {
             int fila = getFila(lastSelectedCell);
             int columna = getColumna(lastSelectedCell);
             for (int i = 0; i < 9; i++) {
-                visual[fila][i].setBackground(CELL_COLOR);
-                visual[i][columna].setBackground(CELL_COLOR);
+                if (visual[fila][i].getBackground() != COMPLETE_COLOR) {
+                    visual[fila][i].setBackground(CELL_COLOR);
+                }
+                if (visual[i][columna].getBackground() != COMPLETE_COLOR) {
+                    visual[i][columna].setBackground(CELL_COLOR);
+                }
             }
         }
     }
@@ -149,6 +157,7 @@ public class SudokuGame extends JFrame implements KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
         JTextField source = (JTextField) e.getSource();
+        resetHighlight();
         highlightRowAndColumn(source);
     }
 
@@ -186,6 +195,12 @@ public class SudokuGame extends JFrame implements KeyListener {
                         }
                     }
                 }
+                
+                if (isSubgridComplete(fila, columna)) {
+                    colorSubgrid(fila, columna, COMPLETE_COLOR);
+                }
+
+                resetHighlight();
             }
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Error al verificar el número.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -220,8 +235,8 @@ public class SudokuGame extends JFrame implements KeyListener {
     }
 
     private boolean enFila(int numero, int fila, int columna) {
-        for (int i = 0; i < 9; i++) {
-            if (i != columna && !visual[fila][i].getText().isEmpty() && Integer.parseInt(visual[fila][i].getText()) == numero) {
+        for (int index = 0; index < 9; index++) {
+            if (index != columna && !visual[fila][index].getText().isEmpty() && Integer.parseInt(visual[fila][index].getText()) == numero) {
                 return true;
             }
         }
@@ -229,8 +244,8 @@ public class SudokuGame extends JFrame implements KeyListener {
     }
 
     private boolean enColumna(int numero, int columna, int fila) {
-        for (int i = 0; i < 9; i++) {
-            if (i != fila && !visual[i][columna].getText().isEmpty() && Integer.parseInt(visual[i][columna].getText()) == numero) {
+        for (int index = 0; index < 9; index++) {
+            if (index != fila && !visual[index][columna].getText().isEmpty() && Integer.parseInt(visual[index][columna].getText()) == numero) {
                 return true;
             }
         }
@@ -241,14 +256,45 @@ public class SudokuGame extends JFrame implements KeyListener {
         int inicioFila = (fila / 3) * 3;
         int inicioColumna = (columna / 3) * 3;
 
-        for (int i = inicioFila; i < inicioFila + 3; i++) {
+        for (int index = inicioFila; index < inicioFila + 3; index++) {
             for (int j = inicioColumna; j < inicioColumna + 3; j++) {
-                if ((i != fila || j != columna) && !visual[i][j].getText().isEmpty() && Integer.parseInt(visual[i][j].getText()) == numero) {
+                if ((index != fila || j != columna) && !visual[index][j].getText().isEmpty() && Integer.parseInt(visual[index][j].getText()) == numero) {
                     return true;
                 }
             }
         }
         return false;
+    }
+
+    private boolean isSubgridComplete(int fila, int columna) {
+        int inicioFila = (fila / 3) * 3;
+        int inicioColumna = (columna / 3) * 3;
+        boolean[] seen = new boolean[10]; 
+
+        for (int index = inicioFila; index < inicioFila + 3; index++) {
+            for (int j = inicioColumna; j < inicioColumna + 3; j++) {
+                if (visual[index][j].getText().isEmpty()) {
+                    return false;
+                }
+                int num = Integer.parseInt(visual[index][j].getText());
+                if (seen[num]) {
+                    return false; 
+                }
+                seen[num] = true;
+            }
+        }
+        return true;
+    }
+
+    private void colorSubgrid(int fila, int columna, Color color) {
+        int inicioFila = (fila / 3) * 3;
+        int inicioColumna = (columna / 3) * 3;
+
+        for (int index = inicioFila; index < inicioFila + 3; index++) {
+            for (int j = inicioColumna; j < inicioColumna + 3; j++) {
+                visual[index][j].setBackground(color);
+            }
+        }
     }
 
     public static void main(String[] args) {
